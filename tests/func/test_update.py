@@ -72,3 +72,28 @@ def test_update_import_url(repo_dir, dvc_repo):
     assert os.path.exists(dst)
     assert os.path.isfile(dst)
     assert filecmp.cmp(src, dst, shallow=False)
+
+
+def test_update_rev(repo_dir, dvc_repo):
+    src = "file"
+    dst = src + "_imported"
+
+    shutil.copyfile(repo_dir.FOO, src)
+
+    stage = dvc_repo.imp_url(src, dst)
+
+    assert os.path.exists(dst)
+    assert os.path.isfile(dst)
+    assert filecmp.cmp(src, dst, shallow=False)
+
+    # update data
+    os.unlink(src)
+    shutil.copyfile(repo_dir.BAR, src)
+
+    assert dvc_repo.status([stage.path]) == {}
+    dvc_repo.update(stage.path)
+    assert dvc_repo.status([stage.path]) == {}
+
+    assert os.path.exists(dst)
+    assert os.path.isfile(dst)
+    assert filecmp.cmp(src, dst, shallow=False)
